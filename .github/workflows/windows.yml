@@ -17,6 +17,12 @@ jobs:
         cd depot_tools
         7z x ..\depot_tools.zip
         echo %__CD__% >> %GITHUB_PATH%
+    - name: Initialize Depot Tools
+      shell: cmd
+      run: |
+        cd depot_tools
+        gclient
+        exit /b 0
     - name: Clone ANGLE
       shell: cmd
       run: git clone https://chromium.googlesource.com/angle/angle
