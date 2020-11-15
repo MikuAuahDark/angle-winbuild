@@ -1,0 +1,31 @@
+name: win-build
+on: [push]
+
+jobs:
+  arm64:
+    runs-on: windows-latest
+    env:
+      DEPOT_TOOLS_WIN_TOOLCHAIN: 0
+    steps:
+    - name: Download Depot Tools
+      shell: cmd
+      run: curl -o depot_tools.zip https://storage.googleapis.com/chrome-infra/depot_tools.zip
+    - name: Extract Depot Tools
+      shell: cmd
+      run: |
+        mkdir depot_tools
+        cd depot_tools
+        7z x ..\depot_tools.zip
+        echo %__CD__% >> %GITHUB_PATH%
+    - name: Clone ANGLE
+      shell: cmd
+      run: git clone https://chromium.googlesource.com/angle/angle
+    - name: Bootstrap ANGLE
+      shell: cmd
+      run: cd angle && python scripts/bootstrap.py
+    - name: Configure ANGLE
+      shell: cmd
+      run: cd angle && gn gen out/Hello --args="target_cpu = \"arm64\" is_debug = false"
+    - name: Build
+      shell: cmd
+      run: cd angle && autoninja -C out/Hello
