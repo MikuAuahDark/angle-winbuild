@@ -16,16 +16,22 @@ jobs:
         mkdir depot_tools
         cd depot_tools
         7z x ..\depot_tools.zip
-        echo %__CD__% >> %GITHUB_PATH%
     - name: Initialize Depot Tools
       shell: cmd
       run: |
         cd depot_tools
         gclient
         exit /b 0
+    - name: Prepend Depot Tools to PATH
+      shell: powershell
+      run: |
+        cd depot_tools
+        echo $PWD.ToString() | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
     - name: Check Python
       shell: cmd
       run: |
+        path
+        where python
         python --version
         python.exe --version
         python.bat --version
@@ -34,7 +40,7 @@ jobs:
       run: git clone https://chromium.googlesource.com/angle/angle
     - name: Bootstrap ANGLE
       shell: cmd
-      run: cd angle && where python && python scripts/bootstrap.py
+      run: cd angle && python scripts/bootstrap.py
     - name: Configure ANGLE
       shell: cmd
       run: cd angle && gn gen out/Hello --args="target_cpu = \"arm64\" is_debug = false"
