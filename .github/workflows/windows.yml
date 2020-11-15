@@ -23,9 +23,15 @@ jobs:
         cd depot_tools
         gclient
         exit /b 0
+    - name: Check Python
+      shell: cmd
+      run: |
+        python --version
+        python.exe --version
+        python.bat --version
     - name: Clone ANGLE
       shell: cmd
-      run: git clone https://chromium.googlesource.com/angle/angle && path
+      run: git clone https://chromium.googlesource.com/angle/angle
     - name: Bootstrap ANGLE
       shell: cmd
       run: cd angle && where python && python scripts/bootstrap.py
