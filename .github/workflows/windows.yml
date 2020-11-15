@@ -25,10 +25,10 @@ jobs:
         exit /b 0
     - name: Clone ANGLE
       shell: cmd
-      run: git clone https://chromium.googlesource.com/angle/angle
+      run: git clone https://chromium.googlesource.com/angle/angle && path
     - name: Bootstrap ANGLE
       shell: cmd
-      run: cd angle && python scripts/bootstrap.py
+      run: cd angle && where python && python scripts/bootstrap.py
     - name: Configure ANGLE
       shell: cmd
       run: cd angle && gn gen out/Hello --args="target_cpu = \"arm64\" is_debug = false"
