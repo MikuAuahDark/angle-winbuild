@@ -27,14 +27,6 @@ jobs:
       run: |
         cd depot_tools
         echo $PWD.ToString() | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-    - name: Check Python
-      shell: cmd
-      run: |
-        path
-        where python
-        python --version
-        python.exe --version
-        python.bat --version
     - name: Clone ANGLE
       shell: cmd
       run: git clone https://chromium.googlesource.com/angle/angle
@@ -46,4 +38,15 @@ jobs:
       run: cd angle && gn gen out/Hello --args="target_cpu = \"arm64\" is_debug = false"
     - name: Build
       shell: cmd
-      run: cd angle && autoninja -C out/Hello
+      run: cd angle && autoninja -C out/Hello libEGL libGLESv2
+    - name: Artifact Prearation
+      shell: cmd
+      run: |
+        mkdir output
+        copy angle\out\Hello\libEGL.dll
+        copy angle\out\Hello\libGLESv2.dll
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: angle-arm64
+        path: output/
