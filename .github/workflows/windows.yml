@@ -1,9 +1,16 @@
 name: win-build
-on: [push]
+
+on:
+  push:
+  schedule:
+    - cron: '0 12 * * 0'
 
 jobs:
-  arm64:
+  winbuild:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        target-cpu: [x86, x64, arm64]
     env:
       DEPOT_TOOLS_WIN_TOOLCHAIN: 0
     steps:
@@ -35,18 +42,20 @@ jobs:
       run: cd angle && python scripts/bootstrap.py && gclient sync && git checkout master
     - name: Configure ANGLE
       shell: cmd
-      run: cd angle && gn gen out/Hello --args="target_cpu = \"arm64\" is_debug = false"
+      env:
+        ANGLE_TARGET_CPU: ${{ matrix.target-cpu }}
+      run: cd angle && gn gen out/Hello --args="target_cpu = \"%ANGLE_TARGET_CPU%\" is_debug = false"
     - name: Build
       shell: cmd
       run: cd angle && autoninja -C out/Hello libEGL libGLESv2
-    - name: Artifact Prearation
+    - name: Artifact Preparation
       shell: cmd
       run: |
         mkdir output
-        copy angle\out\Hello\libEGL.dll
-        copy angle\out\Hello\libGLESv2.dll
+        copy angle\out\Hello\libEGL.dll output\libEGL.dll
+        copy angle\out\Hello\libGLESv2.dll output\libGLESv2.dll
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: angle-arm64
+        name: angle-${{ matrix.target-cpu }}
         path: output/
