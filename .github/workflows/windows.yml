@@ -74,11 +74,11 @@ jobs:
     - name: List All Files
       run: ls -alFR
     - name: Zip x86 Binaries
-      run: zip zip -j angle-win-x86.zip angle-x86/*
+      run: zip -j angle-win-x86.zip angle-x86/*
     - name: Zip AMD64 Binaries
-      run: zip zip -j angle-win-AMD64.zip angle-x64/*
+      run: zip -j angle-win-AMD64.zip angle-x64/*
     - name: Zip ARM64 Binaries
-      run: zip zip -j angle-win-arm64.zip angle-arm64/*
+      run: zip -j angle-win-arm64.zip angle-arm64/*
     - name: Upload to Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
