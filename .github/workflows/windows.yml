@@ -8,7 +8,7 @@ on:
 jobs:
   winbuild:
     name: Compile
-    runs-on: windows-latest
+    runs-on: windows-2019
     strategy:
       matrix:
         target-cpu: [x86, x64, arm64]
