@@ -15,6 +15,22 @@ jobs:
     env:
       DEPOT_TOOLS_WIN_TOOLCHAIN: 0
     steps:
+    - name: Download Windows SDK Setup 10.0.20348
+      shell: cmd
+      run: curl -Lo winsdksetup.exe https://go.microsoft.com/fwlink/?linkid=2164145
+    - name: Install Debugging Tools for Windows
+      id: windbg
+      shell: cmd
+      run: |
+        setlocal enabledelayedexpansion
+        start /WAIT %CD%\winsdksetup.exe /features OptionId.WindowsDesktopDebuggers /q /log %CD%\log.txt
+        echo ::set-output name=ERRORLEVEL::!ERRORLEVEL!
+    - name: Print Log
+      if: always()
+      shell: cmd
+      run: |
+        type log.txt
+        exit /b ${{ steps.windbg.outputs.ERRORLEVEL }}
     - name: Download Depot Tools
       shell: cmd
       run: curl -o depot_tools.zip https://storage.googleapis.com/chrome-infra/depot_tools.zip
