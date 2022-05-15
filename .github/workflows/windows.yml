@@ -8,7 +8,7 @@ on:
 jobs:
   winbuild:
     name: Compile
-    runs-on: windows-2019
+    runs-on: windows-2022
     strategy:
       matrix:
         target-cpu: [x86, x64, arm64]
@@ -31,21 +31,18 @@ jobs:
         gclient
         exit /b 0
     - name: Prepend Depot Tools to PATH
-      shell: powershell
+      shell: cmd
       run: |
         cd depot_tools
-        echo $PWD.ToString() | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo %CD% >> %GITHUB_PATH%
     - name: Clone ANGLE
       shell: cmd
-      run: git clone https://chromium.googlesource.com/angle/angle
-    - name: Bootstrap ANGLE
-      shell: cmd
-      run: cd angle && python scripts/bootstrap.py && gclient sync && git checkout master
+      run: mkdir angle && cd angle && fetch angle
     - name: Configure ANGLE
       shell: cmd
       env:
         ANGLE_TARGET_CPU: ${{ matrix.target-cpu }}
-      run: cd angle && gn gen out/Hello --args="target_cpu = \"%ANGLE_TARGET_CPU%\" is_debug = false"
+      run: cd angle && gn gen out/Hello --args="target_cpu = \"%ANGLE_TARGET_CPU%\" is_debug = false is_component_build = false"
     - name: Build
       shell: cmd
       run: cd angle && autoninja -C out/Hello libEGL libGLESv2
