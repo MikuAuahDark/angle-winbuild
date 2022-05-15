@@ -34,10 +34,11 @@ jobs:
       shell: cmd
       run: |
         cd depot_tools
-        echo %CD% >> %GITHUB_PATH%
+        set /p="%CD%" < nul >> %GITHUB_PATH%
+        exit /b 0
     - name: Clone ANGLE
       shell: cmd
-      run: path && mkdir angle && cd angle && fetch angle
+      run: mkdir angle && cd angle && fetch angle && gclient sync
     - name: Configure ANGLE
       shell: cmd
       env:
