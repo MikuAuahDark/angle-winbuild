@@ -37,7 +37,7 @@ jobs:
         echo %CD% >> %GITHUB_PATH%
     - name: Clone ANGLE
       shell: cmd
-      run: mkdir angle && cd angle && fetch angle
+      run: path && mkdir angle && cd angle && fetch angle
     - name: Configure ANGLE
       shell: cmd
       env:
