@@ -4,6 +4,12 @@ on:
   push:
   schedule:
     - cron: '0 12 * * 0'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Chromium Branch Number to Build
+        type: string
+        required: true
 
 jobs:
   winbuild:
@@ -12,67 +18,79 @@ jobs:
     strategy:
       matrix:
         target-cpu: [x86, x64, arm64]
+        target-os: [win, winuwp]
     env:
       DEPOT_TOOLS_WIN_TOOLCHAIN: 0
+    defaults:
+      run:
+        shell: cmd
     steps:
     - name: Download Windows SDK Setup 10.0.20348
-      shell: cmd
       run: curl -Lo winsdksetup.exe https://go.microsoft.com/fwlink/?linkid=2164145
     - name: Install Debugging Tools for Windows
       id: windbg
-      shell: cmd
       run: |
         setlocal enabledelayedexpansion
         start /WAIT %CD%\winsdksetup.exe /features OptionId.WindowsDesktopDebuggers /q /log %CD%\log.txt
         echo ::set-output name=ERRORLEVEL::!ERRORLEVEL!
     - name: Print Log
       if: always()
-      shell: cmd
       run: |
         type log.txt
         exit /b ${{ steps.windbg.outputs.ERRORLEVEL }}
     - name: Download Depot Tools
       shell: cmd
-      run: curl -o depot_tools.zip https://storage.googleapis.com/chrome-infra/depot_tools.zip
-    - name: Extract Depot Tools
-      shell: cmd
-      run: |
-        mkdir depot_tools
-        cd depot_tools
-        7z x ..\depot_tools.zip
+      run: git clone --filter=tree:0 https://chromium.googlesource.com/chromium/tools/depot_tools.git depot_tools
     - name: Initialize Depot Tools
-      shell: cmd
+      working-directory: depot_tools
       run: |
-        cd depot_tools
         gclient
         exit /b 0
     - name: Prepend Depot Tools to PATH
-      shell: cmd
+      working-directory: depot_tools
       run: |
-        cd depot_tools
         set /p="%CD%" < nul >> %GITHUB_PATH%
         exit /b 0
-    - name: Clone ANGLE
-      shell: cmd
-      run: mkdir angle && cd angle && fetch angle && gclient sync
+    - name: Create ANGLE Directory
+      run: mkdir angle
+    - name: Fetch ANGLE
+      working-directory: angle
+      run: fetch angle
+    - name: Checkout ANGLE Branch
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.branch != 'main' }}
+      working-directory: angle
+      run: git checkout origin/chromium/${{ inputs.branch }}
+    - name: Sync ANGLE
+      working-directory: angle
+      run: gclient sync
     - name: Configure ANGLE
-      shell: cmd
       env:
         ANGLE_TARGET_CPU: ${{ matrix.target-cpu }}
-      run: cd angle && gn gen out/Hello --args="target_cpu = \"%ANGLE_TARGET_CPU%\" is_debug = false is_component_build = false"
+        ANGLE_TARGET_OS: ${{ matrix.target-os }}
+      working-directory: angle
+      run: gn gen out/Hello --args="target_cpu=\"%ANGLE_TARGET_CPU%\" target_os=\"%ANGLE_TARGET_OS%\" is_debug=false is_component_build=false is_clang=false"
+    - name: Fix UWP Ninja Script
+      if: ${{ matrix.target-os == 'winuwp' }}
+      shell: powershell
+      working-directory: angle
+      run: |
+        $file = "out/Hello/obj/src/libANGLE/renderer/d3d/angle_d3d11_backend.ninja"
+        $utf8 = New-Object System.Text.UTF8Encoding $False
+        [Environment]::CurrentDirectory = (Get-Location -PSProvider FileSystem).ProviderPath
+        $content = [System.IO.File]::ReadAllText($file).Replace("-DANGLE_ENABLE_WINDOWS_UWP$ 1","-DANGLE_ENABLE_WINDOWS_UWP=1")
+        [System.IO.File]::WriteAllText($file, $content, $utf8)
     - name: Build
-      shell: cmd
-      run: cd angle && autoninja -C out/Hello libEGL libGLESv2
+      working-directory: angle
+      run: autoninja -C out/Hello libEGL libGLESv2
     - name: Artifact Preparation
-      shell: cmd
       run: |
         mkdir output
         copy angle\out\Hello\libEGL.dll output\libEGL.dll
         copy angle\out\Hello\libGLESv2.dll output\libGLESv2.dll
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
-        name: angle-${{ matrix.target-cpu }}
+        name: angle-${{ matrix.target-cpu }}-${{ matrix.target-os }}
         path: output/
   release:
     name: Upload
@@ -81,6 +99,21 @@ jobs:
     steps:
     - name: Install Zip
       run: sudo apt-get install --assume-yes zip curl
+    - name: Determinator
+      id: kind
+      env:
+        BUILD_BRANCH: ${{ inputs.branch || 'main' }}
+      run: |
+        set -e
+        if [ "$BUILD_BRANCH" == "main" ]; then
+            echo "::set-output name=type::prerelease"
+            echo "::set-output name=name::Continuous Build"
+            echo "::set-output name=tag::continuous"
+        else
+            echo "::set-output name=type::stable"
+            echo "::set-output name=name::ANGLE Branch $BUILD_BRANCH"
+            echo "::set-output name=tag::cr_$BUILD_BRANCH
+        fi
     - name: Download pyuploadtool
       run: curl -LO https://github.com/TheAssassin/pyuploadtool/releases/download/continuous/pyuploadtool-x86_64.AppImage && chmod +x pyuploadtool-x86_64.AppImage
     - name: Download Artifacts
@@ -88,12 +121,21 @@ jobs:
     - name: List All Files
       run: ls -alFR
     - name: Zip x86 Binaries
-      run: zip -j angle-win-x86.zip angle-x86/*
-    - name: Zip AMD64 Binaries
-      run: zip -j angle-win-AMD64.zip angle-x64/*
+      run: zip -j angle-win-x86.zip angle-x86-win/*
+    - name: Zip x64 Binaries
+      run: zip -j angle-win-x64.zip angle-x64-win/*
     - name: Zip ARM64 Binaries
-      run: zip -j angle-win-arm64.zip angle-arm64/*
+      run: zip -j angle-win-arm64.zip angle-arm64-win/*
+    - name: Zip x86 Binaries (UWP)
+      run: zip -j angle-winuwp-x86.zip angle-x86-winuwp/*
+    - name: Zip x64 Binaries (UWP)
+      run: zip -j angle-winuwp-x64.zip angle-x64-winuwp/*
+    - name: Zip ARM64 Binaries (UWP)
+      run: zip -j angle-winuwp-arm64.zip angle-arm64-winuwp/*
     - name: Upload to Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: ./pyuploadtool-x86_64.AppImage angle-win-*.zip
+        GITHUB_CONTINUOUS_RELEASE_TYPE: ${{ steps.kind.outputs.type }}
+        GITHUB_CONTINUOUS_RELEASE_NAME: ${{ steps.kind.outputs.name }}
+        GITHUB_CONTINUOUS_RELEASE_TAG: ${{ steps.kind.outputs.tag }}
+      run: ./pyuploadtool-x86_64.AppImage angle-win*-*.zip
