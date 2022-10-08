@@ -112,7 +112,7 @@ jobs:
         else
             echo "::set-output name=type::stable"
             echo "::set-output name=name::ANGLE Branch $BUILD_BRANCH"
-            echo "::set-output name=tag::cr_$BUILD_BRANCH
+            echo "::set-output name=tag::cr_$BUILD_BRANCH"
         fi
     - name: Download pyuploadtool
       run: curl -LO https://github.com/TheAssassin/pyuploadtool/releases/download/continuous/pyuploadtool-x86_64.AppImage && chmod +x pyuploadtool-x86_64.AppImage
