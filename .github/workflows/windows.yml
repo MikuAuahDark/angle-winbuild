@@ -32,7 +32,7 @@ jobs:
       run: |
         setlocal enabledelayedexpansion
         start /WAIT %CD%\winsdksetup.exe /features OptionId.WindowsDesktopDebuggers /q /log %CD%\log.txt
-        echo ::set-output name=ERRORLEVEL::!ERRORLEVEL!
+        echo ERRORLEVEL=!ERRORLEVEL! >> %GITHUB_OUTPUT%
     - name: Print Log
       if: always()
       run: |
@@ -106,13 +106,13 @@ jobs:
       run: |
         set -e
         if [ "$BUILD_BRANCH" == "main" ]; then
-            echo "::set-output name=type::prerelease"
-            echo "::set-output name=name::Continuous Build"
-            echo "::set-output name=tag::continuous"
+            echo "type=prerelease" >> $GITHUB_OUTPUT
+            echo "name=Continuous Build" >> $GITHUB_OUTPUT
+            echo "tag=continuous" >> $GITHUB_OUTPUT
         else
-            echo "::set-output name=type::stable"
-            echo "::set-output name=name::ANGLE Branch $BUILD_BRANCH"
-            echo "::set-output name=tag::cr_$BUILD_BRANCH"
+            echo "type=stable" >> $GITHUB_OUTPUT
+            echo "name=ANGLE Branch $BUILD_BRANCH" >> $GITHUB_OUTPUT
+            echo "tag=cr_$BUILD_BRANCH" >> $GITHUB_OUTPUT
         fi
     - name: Download pyuploadtool
       run: curl -LO https://github.com/TheAssassin/pyuploadtool/releases/download/continuous/pyuploadtool-x86_64.AppImage && chmod +x pyuploadtool-x86_64.AppImage
