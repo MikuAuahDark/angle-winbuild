@@ -98,7 +98,7 @@ jobs:
     needs: winbuild
     steps:
     - name: Install Zip
-      run: sudo apt-get install --assume-yes zip curl
+      run: sudo apt-get install --assume-yes zip curl libfuse2
     - name: Determinator
       id: kind
       env:
