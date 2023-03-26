@@ -16,6 +16,7 @@ jobs:
     name: Compile
     runs-on: windows-2022
     strategy:
+      fail-fast: false
       matrix:
         target-cpu: [x86, x64, arm64]
         target-os: [win, winuwp]
@@ -40,7 +41,7 @@ jobs:
         exit /b ${{ steps.windbg.outputs.ERRORLEVEL }}
     - name: Download Depot Tools
       shell: cmd
-      run: git clone --filter=tree:0 https://chromium.googlesource.com/chromium/tools/depot_tools.git depot_tools
+      run: git clone --filter=tree:0 https://chromium.googlesource.com/chromium/tools/depot_tools depot_tools
     - name: Initialize Depot Tools
       working-directory: depot_tools
       run: |
