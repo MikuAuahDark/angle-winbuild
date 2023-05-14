@@ -20,6 +20,9 @@ jobs:
       matrix:
         target-cpu: [x86, x64, arm64]
         target-os: [win, winuwp]
+        exclude:
+          - target-cpu: arm64
+            target-os: winuwp
     env:
       DEPOT_TOOLS_WIN_TOOLCHAIN: 0
     defaults:
@@ -128,8 +131,8 @@ jobs:
       run: zip -j angle-winuwp-x86.zip angle-x86-winuwp/*
     - name: Zip x64 Binaries (UWP)
       run: zip -j angle-winuwp-x64.zip angle-x64-winuwp/*
-    - name: Zip ARM64 Binaries (UWP)
-      run: zip -j angle-winuwp-arm64.zip angle-arm64-winuwp/*
+    #- name: Zip ARM64 Binaries (UWP)
+    #  run: zip -j angle-winuwp-arm64.zip angle-arm64-winuwp/*
     - name: Upload to Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
