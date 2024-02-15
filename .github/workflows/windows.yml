@@ -89,7 +89,7 @@ jobs:
         copy angle\out\Hello\libEGL.dll output\libEGL.dll
         copy angle\out\Hello\libGLESv2.dll output\libGLESv2.dll
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: angle-${{ matrix.target-cpu }}-${{ matrix.target-os }}
         path: output/
@@ -119,7 +119,7 @@ jobs:
     - name: Download pyuploadtool
       run: curl -LO https://github.com/TheAssassin/pyuploadtool/releases/download/continuous/pyuploadtool-x86_64.AppImage && chmod +x pyuploadtool-x86_64.AppImage
     - name: Download Artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
     - name: List All Files
       run: ls -alFR
     - name: Zip x86 Binaries
