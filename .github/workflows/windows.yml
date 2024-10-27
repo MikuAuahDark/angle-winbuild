@@ -29,13 +29,13 @@ jobs:
       run:
         shell: cmd
     steps:
-    - name: Download Windows SDK Setup 10.0.20348
-      run: curl -Lfo winsdksetup.exe https://go.microsoft.com/fwlink/?linkid=2164145
-    - name: Install Debugging Tools for Windows
+    - name: Download Windows SDK Setup 10.0.26100
+      run: curl -Lfo winsdksetup.exe https://go.microsoft.com/fwlink/?linkid=2286561
+    - name: Install Windows SDK 10.0.26100 and Debugging Tools
       id: windbg
       run: |
         setlocal enabledelayedexpansion
-        start /WAIT %CD%\winsdksetup.exe /features OptionId.WindowsDesktopDebuggers /q /log %CD%\log.txt
+        start /WAIT %CD%\winsdksetup.exe /features OptionId.WindowsDesktopDebuggers OptionId.DesktopCPPx86 OptionId.DesktopCPPx64 OptionId.DesktopCPParm64 OptionId.UWPCPP OptionId.UWPManaged /q /norestart /log %CD%\log.txt
         echo ERRORLEVEL=!ERRORLEVEL! >> %GITHUB_OUTPUT%
     - name: Print Log
       if: always()
