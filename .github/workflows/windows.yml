@@ -79,7 +79,7 @@ jobs:
         ANGLE_TARGET_CPU: ${{ matrix.target-cpu }}
         ANGLE_TARGET_OS: ${{ matrix.target-os }}
       working-directory: angle
-      run: gn gen out/Hello --args="target_cpu=\"%ANGLE_TARGET_CPU%\" target_os=\"%ANGLE_TARGET_OS%\" is_debug=false is_component_build=false is_clang=false angle_enable_d3d9=false angle_enable_gl=false angle_enable_vulkan=false"
+      run: gn gen out/Hello --args="target_cpu=\"%ANGLE_TARGET_CPU%\" target_os=\"%ANGLE_TARGET_OS%\" is_debug=false is_component_build=false angle_enable_d3d9=false angle_enable_gl=false"
     - name: Build
       working-directory: angle
       run: autoninja -C out/Hello libEGL libGLESv2
