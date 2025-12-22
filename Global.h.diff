@@ -1,0 +1,12 @@
+diff --git a/include/dxc/Support/Global.h b/include/dxc/Support/Global.h
+index 9d97467df..2aed93fc0 100644
+--- a/include/dxc/Support/Global.h
++++ b/include/dxc/Support/Global.h
+@@ -27,6 +27,7 @@ typedef _Return_type_success_(return >= 0) long HRESULT;
+ #include "dxc/Support/exception.h"
+ #include "dxc/WinAdapter.h"
+ #include <stdarg.h>
++#include <stdlib.h>
+ #include <system_error>
+ 
+ ///////////////////////////////////////////////////////////////////////////////

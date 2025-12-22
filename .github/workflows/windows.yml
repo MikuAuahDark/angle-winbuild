@@ -29,6 +29,8 @@ jobs:
       run:
         shell: cmd
     steps:
+    - name: Checkout
+      uses: actions/checkout@v6
     - name: Download Windows SDK Setup 10.0.26100
       run: curl -Lfo winsdksetup.exe https://go.microsoft.com/fwlink/?linkid=2286561
     - name: Install Windows SDK 10.0.26100 and Debugging Tools
@@ -80,6 +82,11 @@ jobs:
         ANGLE_TARGET_OS: ${{ matrix.target-os }}
       working-directory: angle
       run: gn gen out/Hello --args="target_cpu=\"%ANGLE_TARGET_CPU%\" target_os=\"%ANGLE_TARGET_OS%\" is_debug=false is_component_build=false angle_enable_d3d9=false angle_enable_gl=false"
+    - name: Patch dxc Global.h
+      working-directory: angle
+      run: |
+        git -C third_party/dawn/third_party/dxc apply ../Global.h.diff
+        exit /b 0
     - name: Build
       working-directory: angle
       run: autoninja -C out/Hello libEGL libGLESv2
