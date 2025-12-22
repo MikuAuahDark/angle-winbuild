@@ -31,6 +31,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v6
+      with:
+        path: repository
     - name: Download Windows SDK Setup 10.0.26100
       run: curl -Lfo winsdksetup.exe https://go.microsoft.com/fwlink/?linkid=2286561
     - name: Install Windows SDK 10.0.26100 and Debugging Tools
@@ -85,7 +87,7 @@ jobs:
     - name: Patch dxc Global.h
       working-directory: angle
       run: |
-        git -C third_party/dawn/third_party/dxc apply ../Global.h.diff
+        git -C third_party/dawn/third_party/dxc apply ../repository/Global.h.diff
         exit /b 0
     - name: Build
       working-directory: angle
