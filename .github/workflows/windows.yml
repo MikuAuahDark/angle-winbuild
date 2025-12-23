@@ -84,6 +84,14 @@ jobs:
         ANGLE_TARGET_OS: ${{ matrix.target-os }}
       working-directory: angle
       run: gn gen out/Hello --args="target_cpu=\"%ANGLE_TARGET_CPU%\" target_os=\"%ANGLE_TARGET_OS%\" is_debug=false is_component_build=false angle_enable_d3d9=false angle_enable_gl=false"
+    - name: Debug
+      run: |
+        echo dir root
+        dir
+        echo dir angle
+        dir angle
+        echo dir repository
+        dir repository
     - name: Patch dxc Global.h
       working-directory: angle
       run: |
